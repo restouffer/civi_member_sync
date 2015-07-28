@@ -18,45 +18,7 @@
 
 <?php
 if ( $_GET['action'] == 'confirm' ) {
-	$users = get_users();
-
-	require_once( 'civi.php' );
-	require_once 'CRM/Core/BAO/UFMatch.php';
-
-	foreach ( $users as $user ) {
-		$uid = $user->ID;
-		if ( empty( $uid ) ) {
-			continue;
-		}
-		$sql     = "SELECT * FROM civicrm_uf_match WHERE uf_id =$uid";
-		$contact = CRM_Core_DAO::executeQuery( $sql );
-
-
-		if ( $contact->fetch() ) {
-			$cid        = $contact->contact_id;
-			$memDetails = civicrm_api( "Membership", "get", array( 'version'    => '3',
-			                                                       'page'       => 'CiviCRM',
-			                                                       'q'          => 'civicrm/ajax/rest',
-			                                                       'sequential' => '1',
-			                                                       'contact_id' => $cid
-				) );
-			if ( ! empty( $memDetails['values'] ) ) {
-				foreach ( $memDetails['values'] as $key => $value ) {
-					$memStatusID      = $value['status_id'];
-					$membershipTypeID = $value['membership_type_id'];
-				}
-			}
-
-			$userData = get_userdata( $uid );
-			if ( ! empty( $userData ) ) {
-				$currentRole = $userData->roles[0];
-			}
-			//checking membership status and assign role
-			$check = member_check( $cid, $uid, $currentRole );
-
-		}
-	}
-
+	do_action( 'civi_member_sync_refresh' );
 	?>
 
 	<div id="message" class="updated below-h2">
@@ -65,4 +27,4 @@ if ( $_GET['action'] == 'confirm' ) {
 				rules exist then synchronization has not been
 				completed.</p></span>
 	</div>
-<?php } ?>     
+<?php } ?>
